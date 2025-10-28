@@ -1373,12 +1373,12 @@ cluster.initial_master_nodes:
 node.max_local_storage_nodes: "3"
 path.data: /var/lib/wazuh-indexer
 path.logs: /var/log/wazuh-indexer
-plugins.security.ssl.http.pemcert_filepath: /usr/share/wazuh-indexer/certs/node.pem
-plugins.security.ssl.http.pemkey_filepath: /usr/share/wazuh-indexer/certs/node-key.pem
-plugins.security.ssl.http.pemtrustedcas_filepath: /usr/share/wazuh-indexer/certs/root-ca.pem
-plugins.security.ssl.transport.pemcert_filepath: /usr/share/wazuh-indexer/certs/node.pem
-plugins.security.ssl.transport.pemkey_filepath: /usr/share/wazuh-indexer/certs/node-key.pem
-plugins.security.ssl.transport.pemtrustedcas_filepath: /usr/share/wazuh-indexer/certs/root-ca.pem
+plugins.security.ssl.http.pemcert_filepath: {{ .Values.indexer.configBasePath }}/certs/node.pem
+plugins.security.ssl.http.pemkey_filepath: {{ .Values.indexer.configBasePath }}/certs/node-key.pem
+plugins.security.ssl.http.pemtrustedcas_filepath: {{ .Values.indexer.configBasePath }}/certs/root-ca.pem
+plugins.security.ssl.transport.pemcert_filepath: {{ .Values.indexer.configBasePath }}/certs/node.pem
+plugins.security.ssl.transport.pemkey_filepath: {{ .Values.indexer.configBasePath }}/certs/node-key.pem
+plugins.security.ssl.transport.pemtrustedcas_filepath: {{ .Values.indexer.configBasePath }}/certs/root-ca.pem
 plugins.security.ssl.http.enabled: true
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.ssl.transport.resolve_hostname: false

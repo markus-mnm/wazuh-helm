@@ -38,14 +38,14 @@ spec:
           args:
             - /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh
             - -cd
-            - /usr/share/wazuh-indexer/opensearch-security/
+            - {{ .Values.indexer.configBasePath }}/opensearch-security/
             - -nhnv
             - -cacert
-            - /usr/share/wazuh-indexer/certs/root-ca.pem
+            - {{ .Values.indexer.configBasePath }}/certs/root-ca.pem
             - -cert
-            - /usr/share/wazuh-indexer/certs/admin.pem
+            - {{ .Values.indexer.configBasePath }}/certs/admin.pem
             - -key
-            - /usr/share/wazuh-indexer/certs/admin-key.pem
+            - {{ .Values.indexer.configBasePath }}/certs/admin-key.pem
             - -p
             - "9200"
             - -icl
@@ -60,46 +60,46 @@ spec:
             - name: JAVA_HOME
               value: /usr/share/wazuh-indexer/jdk/
           volumeMounts:
-            # Certs
-            - mountPath: /usr/share/wazuh-indexer/certs/node-key.pem
+            # Certs - Configurable path for compatibility with different wazuh-indexer versions
+            - mountPath: {{ .Values.indexer.configBasePath }}/certs/node-key.pem
               name: node-certs
               readOnly: true
               subPath: tls.key
-            - mountPath: /usr/share/wazuh-indexer/certs/node.pem
+            - mountPath: {{ .Values.indexer.configBasePath }}/certs/node.pem
               name: node-certs
               readOnly: true
               subPath: tls.crt
-            - mountPath: /usr/share/wazuh-indexer/certs/root-ca.pem
+            - mountPath: {{ .Values.indexer.configBasePath }}/certs/root-ca.pem
               name: node-certs
               readOnly: true
               subPath: ca.crt
-            - mountPath: /usr/share/wazuh-indexer/certs/admin.pem
+            - mountPath: {{ .Values.indexer.configBasePath }}/certs/admin.pem
               name: admin-certs
               readOnly: true
               subPath: tls.crt
-            - mountPath: /usr/share/wazuh-indexer/certs/admin-key.pem
+            - mountPath: {{ .Values.indexer.configBasePath }}/certs/admin-key.pem
               name: admin-certs
               readOnly: true
               subPath: tls.key
-            # Config
+            # Config - Configurable path for compatibility with different wazuh-indexer versions
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/opensearch.yml
+              mountPath: {{ .Values.indexer.configBasePath }}/opensearch.yml
               subPath: opensearch.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/opensearch-security/internal_users.yml
+              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/internal_users.yml
               subPath: internal_users.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/opensearch-security/roles.yml
+              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/roles.yml
               subPath: roles.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/opensearch-security/roles_mapping.yml
+              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/roles_mapping.yml
               subPath: roles_mapping.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: /usr/share/wazuh-indexer/opensearch-security/config.yml
+              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/config.yml
               subPath: config.yml
               readOnly: true
       terminationGracePeriodSeconds: 30
