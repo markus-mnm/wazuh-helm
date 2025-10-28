@@ -221,6 +221,13 @@ indexer:
   ## Ref: https://kubernetes.io/docs/concepts/storage/volumes/
   ##
   additionalVolumeMounts: []
+  ## @param indexer.configBasePath Base path for indexer configuration and certificates.
+  ## For wazuh-indexer versions < 4.8.0, use: /usr/share/wazuh-indexer
+  ## For wazuh-indexer versions >= 4.8.0, use: /usr/share/wazuh-indexer/config
+  ## This allows compatibility with different wazuh-indexer image versions that expect
+  ## config files in different locations.
+  ##
+  configBasePath: /usr/share/wazuh-indexer
   ## Configuration of the indexer parameters, this should not be changed.
   ## @param indexer.config.opensearch Configuration of opensearch.yml.
   ## @param indexer.config.internalUsers Configuration of internalUsers of the indexer.
