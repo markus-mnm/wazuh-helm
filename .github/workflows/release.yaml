@@ -2,8 +2,11 @@ name: Release Charts
 
 on:
   push:
-    branches:
-      - main
+    # Trigger on any tag push that looks like a version (e.g., v1.0.0, 0.3.3-markus-mnm)
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  # Keep manual trigger if you like:
   workflow_dispatch:
 
 jobs:
@@ -21,19 +24,9 @@ jobs:
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-      - name: Prepare GPG key
-        run: |
-          gpg_dir=.cr-gpg
-          mkdir "$gpg_dir"
-          keyring="$gpg_dir/secring.gpg"
-          base64 -d <<< "$GPG_KEYRING_BASE64" > "$keyring"
-          passphrase_file="$gpg_dir/passphrase"
-          echo "$GPG_PASSPHRASE" > "$passphrase_file"
-          echo "CR_PASSPHRASE_FILE=$passphrase_file" >> "$GITHUB_ENV"
-          echo "CR_KEYRING=$keyring" >> "$GITHUB_ENV"
-        env:
-          GPG_KEYRING_BASE64: "${{ secrets.GPG_KEYRING_BASE64 }}"
-          GPG_PASSPHRASE: "${{ secrets.GPG_PASSPHRASE }}"
+      
+      # REMOVE the entire 'Prepare GPG key' step here
+      
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         with:
