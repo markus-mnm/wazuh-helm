@@ -73,18 +73,16 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-            - name: JOIN_MANAGER
-              value: {{ printf "wazuh.%s.svc.cluster.local" .Release.Namespace }}
-            - name: JOIN_MANAGER_MASTER_HOST
-              value: {{ printf "wazuh.%s.svc.cluster.local" .Release.Namespace }}
-            - name: JOIN_MANAGER_WORKER_HOST
-              value: {{ printf "%s-manager-worker.wazuh.svc.cluster.local" (include "wazuh.fullname" .) }}
-            - name: JOIN_MANAGER_PROTOCOL
-              value: {{ .Values.agent.joinManager.scheme }}
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: WAZUH_REGISTRATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-authd-pass
+                  key: authd.pass
+            # Legacy environment variables for older Wazuh agent versions
             - name: JOIN_MANAGER_USER
               valueFrom:
                 secretKeyRef:
@@ -100,14 +98,9 @@ spec:
                 secretKeyRef:
                   name: wazuh-api-cred
                   key: API_PASSWORD
-            - name: WAZUH_GROUPS
-              value: {{ .Values.agent.joinManager.wazuh.group | quote }}
-            - name: JOIN_MANAGER_API_PORT
-              value: {{ include "wazuh.getPortByName" (dict "portName" "api" "ports" .Values.wazuh.master.service.ports) | quote }}
-            - name: JOIN_MANAGER_PORT
-              value: {{ include "wazuh.getPortByName" (dict "portName" "agents-events" "ports" .Values.wazuh.worker.service.ports) | quote }}
-            - name: HEALTH_CHECK_PROCESSES
-              value: "ossec-execd,ossec-syscheckd,ossec-logcollector,wazuh-modulesd,ossec-authd"
+          envFrom:
+            - configMapRef:
+                name: {{ include "wazuh.fullname" . }}-agent-env
           {{- with .Values.agent.livenessProbe }}
           livenessProbe:
             httpGet:
