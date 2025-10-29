@@ -458,7 +458,7 @@ syscheck.default_max_depth=256
 syscheck.symlink_scan_interval=600
 
 # Maximum file size for calcuting integrity hashes in MBytes [0..4095]
-# A value of 0 MB means to disable this filter
+# A value of 0 MB means to disable this filter
 syscheck.file_max_size=1024
 
 # Rootcheck checking/usage speed. The default is to sleep 50 milliseconds
@@ -497,6 +497,9 @@ wazuh_modules.max_eps=100
 # Wazuh modules - time for a process to quit before killing it [0..3600]
 # 0: Kill immediately
 wazuh_modules.kill_timeout=10
+
+# Wazuh modules - maximum number of open file descriptors
+wazuh_modules.rlimit_nofile=65536
 
 # Wazuh database module settings
 
@@ -561,7 +564,7 @@ wazuh_command.remote_commands=0
 wazuh.thread_stack_size=8192
 
 # Security Configuration Assessment DB request interval in minutes [0..60]
-# This option sets the maximum waiting time to resend a scan when the DB integrity check fails
+# This option sets the maximum waiting time to resend a scan when the DB integrity check fails
 sca.request_db_interval=5
 
 # Enable it to accept execute commands from SCA policies pushed from the manager in the shared configuration
