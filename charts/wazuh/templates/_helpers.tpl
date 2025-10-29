@@ -385,6 +385,9 @@ remoted.send_timeout_to_retry=1
 # 2. Full memory deallocation.
 remoted.buffer_relax=1
 
+# Control message queue size
+remoted.control_msg_queue_size=16384
+
 # Keepalive options
 # Time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes [1..7200]
 remoted.tcp_keepidle=30
@@ -587,6 +590,9 @@ vulnerability-detection.remediation_lru_size=2048
 # 0. Enabled
 # 1. Disabled
 vulnerability-detection.disable_scan_manager=1
+
+# Vulnerability detector - report queue size
+vulnerability-detection.report_queue_size=16384
 
 # Debug options.
 # Debug 0 -> no debug
