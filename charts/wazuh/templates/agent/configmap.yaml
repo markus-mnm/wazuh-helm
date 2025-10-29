@@ -7,16 +7,16 @@ metadata:
     app: {{ include "wazuh.fullname" . }}-agent
 data:
   # New agent init script environment variables (Wazuh 4.8+)
-  WAZUH_MANAGER_SERVER: {{ printf "wazuh.%s.svc.cluster.local" .Release.Namespace }}
+  WAZUH_MANAGER_SERVER: {{ include "wazuh.manager.workerFQDN" . }}
   WAZUH_MANAGER_PORT: "1514"
-  WAZUH_REGISTRATION_SERVER: {{ printf "wazuh.%s.svc.cluster.local" .Release.Namespace }}
+  WAZUH_REGISTRATION_SERVER: {{ include "wazuh.manager.masterFQDN" . }}
   WAZUH_REGISTRATION_PORT: "1515"
 
   # Legacy agent init script environment variables (older versions)
   # These are kept for backward compatibility with older Wazuh container images
-  JOIN_MANAGER: {{ printf "wazuh.%s.svc.cluster.local" .Release.Namespace }}
-  JOIN_MANAGER_MASTER_HOST: {{ printf "wazuh.%s.svc.cluster.local" .Release.Namespace }}
-  JOIN_MANAGER_WORKER_HOST: {{ printf "%s-manager-worker.wazuh.svc.cluster.local" (include "wazuh.fullname" .) }}
+  JOIN_MANAGER: {{ include "wazuh.manager.masterFQDN" . }}
+  JOIN_MANAGER_MASTER_HOST: {{ include "wazuh.manager.masterFQDN" . }}
+  JOIN_MANAGER_WORKER_HOST: {{ include "wazuh.manager.workerFQDN" . }}
   JOIN_MANAGER_PROTOCOL: "tcp"
   JOIN_MANAGER_API_PORT: "55000"
   JOIN_MANAGER_PORT: "1514"

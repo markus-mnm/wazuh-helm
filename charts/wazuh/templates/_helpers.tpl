@@ -458,7 +458,7 @@ syscheck.default_max_depth=256
 syscheck.symlink_scan_interval=600
 
 # Maximum file size for calcuting integrity hashes in MBytes [0..4095]
-# A value of 0 MB means to disable this filter
+# A value of 0 MB means to disable this filter
 syscheck.file_max_size=1024
 
 # Rootcheck checking/usage speed. The default is to sleep 50 milliseconds
@@ -561,7 +561,7 @@ wazuh_command.remote_commands=0
 wazuh.thread_stack_size=8192
 
 # Security Configuration Assessment DB request interval in minutes [0..60]
-# This option sets the maximum waiting time to resend a scan when the DB integrity check fails
+# This option sets the maximum waiting time to resend a scan when the DB integrity check fails
 sca.request_db_interval=5
 
 # Enable it to accept execute commands from SCA policies pushed from the manager in the shared configuration
@@ -2324,4 +2324,13 @@ Define serviceaccount names
 {{- else -}}
     {{ "default" }}
 {{- end -}}
+{{- end -}}
+
+{{/* Agent FQDN Helpers */}}
+{{- define "wazuh.manager.masterFQDN" -}}
+wazuh.{{ .Release.Namespace }}.svc.cluster.local
+{{- end -}}
+
+{{- define "wazuh.manager.workerFQDN" -}}
+{{ include "wazuh.fullname" . }}-manager-worker.{{ .Release.Namespace }}.svc.cluster.local
 {{- end -}}
