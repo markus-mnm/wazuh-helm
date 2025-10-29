@@ -2334,3 +2334,12 @@ Define serviceaccount names
     {{ "default" }}
 {{- end -}}
 {{- end -}}
+
+{{/* Agent FQDN Helpers */}}
+{{- define "wazuh.manager.masterFQDN" -}}
+wazuh.{{ .Release.Namespace }}.svc.cluster.local
+{{- end -}}
+
+{{- define "wazuh.manager.workerFQDN" -}}
+{{ include "wazuh.fullname" . }}-manager-worker.{{ .Release.Namespace }}.svc.cluster.local
+{{- end -}}
