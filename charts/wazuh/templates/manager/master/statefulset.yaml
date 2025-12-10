@@ -1,3 +1,4 @@
+{{- if .Values.wazuh.master.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -26,6 +27,9 @@ spec:
       labels:
         app: {{ include "wazuh.fullname" . }}-manager
         node-type: master
+        {{- with .Values.wazuh.master.extraPodLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       name: wazuh-manager-master
       annotations:
         {{- if .Values.autoreload.enabled }}
@@ -71,7 +75,7 @@ spec:
             secretName: filebeat-tls
         - name: wazuh-authd-pass
           secret:
-            secretName: wazuh-authd-pass
+            secretName: {{ .Values.wazuh.authd.existingSecret | default "wazuh-authd-pass" }}
         - emptyDir: {}
           name: result-config
       {{- with .Values.wazuh.master.additionalVolumes }}
@@ -269,3 +273,4 @@ spec:
         storageClassName: {{ $storageClass }}
         {{- end }}
         {{- end }}
+{{- end }}

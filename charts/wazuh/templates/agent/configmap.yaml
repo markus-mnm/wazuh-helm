@@ -1,26 +1,16 @@
+{{- if .Values.agent.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "wazuh.fullname" . }}-agent-env
+  name: {{ include "wazuh.indexer.fullname" . }}-agent-local-internal-options
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ include "wazuh.fullname" . }}-agent
+    app: {{ include "wazuh.indexer.fullname" . }}-agent
 data:
-  # New agent init script environment variables (Wazuh 4.8+)
-  WAZUH_MANAGER_SERVER: {{ include "wazuh.manager.workerFQDN" . }}
-  WAZUH_MANAGER_PORT: "1514"
-  WAZUH_REGISTRATION_SERVER: {{ include "wazuh.manager.masterFQDN" . }}
-  WAZUH_REGISTRATION_PORT: "1515"
-
-  # Legacy agent init script environment variables (older versions)
-  # These are kept for backward compatibility with older Wazuh container images
-  JOIN_MANAGER: {{ include "wazuh.manager.masterFQDN" . }}
-  JOIN_MANAGER_MASTER_HOST: {{ include "wazuh.manager.masterFQDN" . }}
-  JOIN_MANAGER_WORKER_HOST: {{ include "wazuh.manager.workerFQDN" . }}
-  JOIN_MANAGER_PROTOCOL: "tcp"
-  JOIN_MANAGER_API_PORT: "55000"
-  JOIN_MANAGER_PORT: "1514"
-
-  # Common variables
-  WAZUH_GROUPS: {{ .Values.agent.joinManager.wazuh.group | quote }}
-  HEALTH_CHECK_PROCESSES: "ossec-execd,ossec-syscheckd,ossec-logcollector,wazuh-modulesd,ossec-authd"
+  local_internal_options.conf: |
+    {{- if .Values.agent.debug.enabled }}
+    {{- range .Values.agent.debug.modules }}
+    {{ . }}.debug={{ $.Values.agent.debug.level }}
+    {{- end }}
+    {{- end }}
+{{- end }}

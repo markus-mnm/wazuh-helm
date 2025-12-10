@@ -1,7 +1,9 @@
+{{- if and .Values.certificates.enabled  .Values.wazuh.enabled }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "wazuh.fullname" . }}-filebeat
+  namespace: {{ .Release.Namespace }}
 spec:
   # Secret names are always required.
   secretName: filebeat-tls
@@ -28,3 +30,4 @@ spec:
 {{/*    {{- if eq .Values.certificates.issuer.type "ClusterIssuer" }}*/}}
 {{/*    kind: ClusterIssuer*/}}
 {{/*    {{- end }}*/}}
+{{- end }}

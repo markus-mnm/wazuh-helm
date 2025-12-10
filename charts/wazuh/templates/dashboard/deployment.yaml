@@ -1,3 +1,4 @@
+{{- if .Values.dashboard.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,6 +20,9 @@ spec:
     metadata:
       labels:
         app: {{ include "wazuh.fullname" . }}-dashboard
+        {{- with .Values.dashboard.extraPodLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       annotations:
         {{- if .Values.autoreload.enabled }}
         checksum/configmap: {{ include (print $.Template.BasePath "/dashboard/configmap.yaml") . | sha256sum }}
@@ -145,3 +149,4 @@ spec:
           {{- with .Values.dashboard.additionalEnv }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
+{{- end }}

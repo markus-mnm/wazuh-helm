@@ -1,7 +1,9 @@
+{{- if  and .Values.certificates.enabled  .Values.indexer }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "wazuh.fullname" . }}-node
+  namespace: {{ .Release.Namespace }}
 spec:
   # Secret names are always required.
   secretName: node-tls
@@ -23,3 +25,4 @@ spec:
   issuerRef:
     # Indexer have to use the CA Issuer so that the certificate can be validated with node-tls secret
     name: {{ include "wazuh.fullname" . }}-ca-issuer
+{{- end }}

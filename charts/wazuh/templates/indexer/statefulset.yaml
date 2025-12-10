@@ -23,6 +23,9 @@ spec:
     metadata:
       labels:
         app: {{ include "wazuh.indexer.fullname" . }}-indexer
+        {{- with .Values.indexer.extraPodLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       annotations:
         {{- if .Values.autoreload.enabled }}
         checksum/configmap: {{ include (print $.Template.BasePath "/indexer/configmap.yaml") . | sha256sum }}
@@ -81,15 +84,22 @@ spec:
           {{- end }}
       {{- end }}
       volumes:
+      - name: indexer-certs
+        secret:
+          secretName: indexer-certs
+          defaultMode: 0600
       - name: admin-certs
         secret:
           secretName: admin-tls
+          defaultMode: 0600
       - name: node-certs
         secret:
           secretName: node-tls
-      - configMap:
+          defaultMode: 0600
+      - name: indexer-conf
+        configMap:
           name: {{ include "wazuh.indexer.fullname" . }}-indexer-config
-        name: indexer-conf
+          defaultMode: 0600
       {{- with .Values.indexer.additionalVolumes }}
         {{- toYaml . | nindent 6 }}
       {{- end }}
@@ -153,47 +163,59 @@ spec:
             # PVC
             - mountPath: /var/lib/wazuh-indexer
               name: wazuh-indexer
-            # Certs - Configurable path for compatibility with different wazuh-indexer versions
-            - mountPath: {{ .Values.indexer.configBasePath }}/certs/node-key.pem
+            # Certs
+            - mountPath: /usr/share/wazuh-indexer/config/certs/node-key.pem
               name: node-certs
               readOnly: true
               subPath: tls.key
-            - mountPath: {{ .Values.indexer.configBasePath }}/certs/node.pem
+            - mountPath: /usr/share/wazuh-indexer/config/certs/node.pem
               name: node-certs
               readOnly: true
               subPath: tls.crt
-            - mountPath: {{ .Values.indexer.configBasePath }}/certs/root-ca.pem
+            - mountPath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
               name: node-certs
               readOnly: true
               subPath: ca.crt
-            - mountPath: {{ .Values.indexer.configBasePath }}/certs/admin.pem
+            - mountPath: /usr/share/wazuh-indexer/config/certs/admin.pem
               name: admin-certs
               readOnly: true
               subPath: tls.crt
-            - mountPath: {{ .Values.indexer.configBasePath }}/certs/admin-key.pem
+            - mountPath: /usr/share/wazuh-indexer/config/certs/admin-key.pem
               name: admin-certs
               readOnly: true
               subPath: tls.key
             # Config - Configurable path for compatibility with different wazuh-indexer versions
             - name: indexer-conf
-              mountPath: {{ .Values.indexer.configBasePath }}/opensearch.yml
+              mountPath: /usr/share/wazuh-indexer/config/opensearch.yml
               subPath: opensearch.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/internal_users.yml
+              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml
               subPath: internal_users.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/roles.yml
+              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/roles.yml
               subPath: roles.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/roles_mapping.yml
+              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/roles_mapping.yml
               subPath: roles_mapping.yml
               readOnly: true
             - name: indexer-conf
-              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/config.yml
+              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/config.yml
               subPath: config.yml
+              readOnly: true
+            - name: indexer-conf
+              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/tenants.yml
+              subPath: tenants.yml
+              readOnly: true
+            - name: indexer-conf
+              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/nodes_dn.yml
+              subPath: nodes_dn.yml
+              readOnly: true
+            - name: indexer-conf
+              mountPath: /usr/share/wazuh-indexer/config/opensearch-security/whitelist.yml
+              subPath: whitelist.yml
               readOnly: true
             {{- with .Values.indexer.additionalVolumeMounts }}
             {{- toYaml . | nindent 12 }}
