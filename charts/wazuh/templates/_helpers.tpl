@@ -31,6 +31,45 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
   {{- end -}}
 {{- end -}}
 
+{{- define "wazuh.dashboard.username" -}}
+{{- if .Values.dashboard.cred.existingSecret -}}
+  {{- $secret := lookup "v1" "Secret" .Release.Namespace .Values.dashboard.cred.existingSecret -}}
+  {{- if and $secret (index $secret.data "DASHBOARD_USERNAME") -}}
+    {{- index $secret.data "DASHBOARD_USERNAME" | b64dec -}}
+  {{- else -}}
+    {{- .Values.dashboard.cred.username -}}
+  {{- end -}}
+{{- else -}}
+  {{- .Values.dashboard.cred.username -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "wazuh.dashboard.passwordHash" -}}
+{{- if .Values.dashboard.cred.existingSecret -}}
+  {{- $secret := lookup "v1" "Secret" .Release.Namespace .Values.dashboard.cred.existingSecret -}}
+  {{- if and $secret (index $secret.data "DASHBOARD_PASSWORD_HASH") -}}
+    {{- index $secret.data "DASHBOARD_PASSWORD_HASH" | b64dec -}}
+  {{- else -}}
+    {{- .Values.dashboard.cred.passwordHash -}}
+  {{- end -}}
+{{- else -}}
+  {{- .Values.dashboard.cred.passwordHash -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "wazuh.indexer.passwordHash" -}}
+{{- if .Values.indexer.cred.existingSecret -}}
+  {{- $secret := lookup "v1" "Secret" .Release.Namespace .Values.indexer.cred.existingSecret -}}
+  {{- if and $secret (index $secret.data "INDEXER_PASSWORD_HASH") -}}
+    {{- index $secret.data "INDEXER_PASSWORD_HASH" | b64dec -}}
+  {{- else -}}
+    {{- .Values.indexer.cred.passwordHash -}}
+  {{- end -}}
+{{- else -}}
+  {{- .Values.indexer.cred.passwordHash -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "wazuh.dashboard.config"}}
 server.host: 0.0.0.0
 server.port: {{ .Values.dashboard.service.httpPort }}
@@ -379,14 +418,17 @@ remoted.send_buffer_size=131072
 # Sleep time to retry delivery to a client in TCP (seconds) [1..60]
 remoted.send_timeout_to_retry=1
 
+# Control message queue size for remoted (number of bytes or messages depending on version).
+# Newer Wazuh versions expect this key to be present: add a sane default to avoid "Definition not
+# found" errors during startup.
+remoted.control_msg_queue_size=65536
+
+remoted.router_forwarding_disabled=0
 # Deallocate network buffers after usage.
 # 0. Do not deallocate memory.
 # 1. Shrink memory to the reception chunk.
 # 2. Full memory deallocation.
 remoted.buffer_relax=1
-
-# Control message queue size
-remoted.control_msg_queue_size=16384
 
 # Keepalive options
 # Time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes [1..7200]
@@ -502,7 +544,7 @@ wazuh_modules.max_eps=100
 wazuh_modules.kill_timeout=10
 
 # Wazuh modules - maximum number of open file descriptors
-wazuh_modules.rlimit_nofile=65536
+wazuh_modules.rlimit_nofile = 65536
 
 # Wazuh database module settings
 
@@ -1382,12 +1424,12 @@ cluster.initial_master_nodes:
 node.max_local_storage_nodes: "3"
 path.data: /var/lib/wazuh-indexer
 path.logs: /var/log/wazuh-indexer
-plugins.security.ssl.http.pemcert_filepath: /usr/share/wazuh-indexer/certs/node.pem
-plugins.security.ssl.http.pemkey_filepath: /usr/share/wazuh-indexer/certs/node-key.pem
-plugins.security.ssl.http.pemtrustedcas_filepath: /usr/share/wazuh-indexer/certs/root-ca.pem
-plugins.security.ssl.transport.pemcert_filepath: /usr/share/wazuh-indexer/certs/node.pem
-plugins.security.ssl.transport.pemkey_filepath: /usr/share/wazuh-indexer/certs/node-key.pem
-plugins.security.ssl.transport.pemtrustedcas_filepath: /usr/share/wazuh-indexer/certs/root-ca.pem
+plugins.security.ssl.http.pemcert_filepath: /usr/share/wazuh-indexer/config/certs/node.pem
+plugins.security.ssl.http.pemkey_filepath: /usr/share/wazuh-indexer/config/certs/node-key.pem
+plugins.security.ssl.http.pemtrustedcas_filepath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
+plugins.security.ssl.transport.pemcert_filepath: /usr/share/wazuh-indexer/config/certs/node.pem
+plugins.security.ssl.transport.pemkey_filepath: /usr/share/wazuh-indexer/config/certs/node-key.pem
+plugins.security.ssl.transport.pemtrustedcas_filepath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
 plugins.security.ssl.http.enabled: true
 plugins.security.ssl.transport.enforce_hostname_verification: false
 plugins.security.ssl.transport.resolve_hostname: false
@@ -1418,16 +1460,16 @@ _meta:
 
 ## Demo users
 admin:
-  hash: "{{ .Values.indexer.cred.passwordHash }}"
+  hash: "{{ include "wazuh.indexer.passwordHash" . }}"
   reserved: true
   backend_roles:
   - "admin"
   description: "Demo admin user"
 
-{{ .Values.dashboard.cred.username }}:
-  hash: "{{ .Values.dashboard.cred.passwordHash }}"
+{{ include "wazuh.dashboard.username" . }}:
+  hash: "{{ include "wazuh.dashboard.passwordHash" . }}"
   reserved: true
-  description: "Demo {{ .Values.dashboard.cred.username }} user"
+  description: "Demo {{ include "wazuh.dashboard.username" . }} user"
 
 kibanaro:
   hash: "$2a$12$JJSXNfTowz7Uu5ttXfeYpeYE0arACvcwlPBStB1F.MI7f0U9Z4DGC"
@@ -1543,7 +1585,7 @@ kibana_server:
   {{- end }}
   hosts: []
   users:
-    - "{{ .Values.dashboard.cred.username }}"
+    - "{{ include "wazuh.dashboard.username" . }}"
   and_backend_roles: []
 
 kibana_user:
@@ -1569,7 +1611,7 @@ manage_wazuh_index:
   backend_roles: []
   hosts: []
   users:
-    - "{{ .Values.dashboard.cred.username }}"
+    - "{{ include "wazuh.dashboard.username" . }}"
   and_backend_roles: []
 
 
@@ -1581,6 +1623,25 @@ manage_wazuh_index:
 {{- toYaml . | nindent 0 }}
 {{- end }}
 {{- end }}
+
+{{- define "wazuh.indexer.tenants"}}
+_meta:
+  type: "tenants"
+  config_version: 2
+
+{{end}}
+
+{{- define "wazuh.indexer.nodes_dn"}}
+_meta:
+  type: "nodes_dn"
+  config_version: 2
+{{end}}
+
+{{- define "wazuh.indexer.whitelist"}}
+_meta:
+  type: "whitelist"
+  config_version: 2
+{{end}}
 
 {{- define "wazuh.indexer.roles"}}
 _meta:
@@ -1810,6 +1871,8 @@ index_management_full_access:
     - "cluster:admin/opensearch/controlcenter/lron/*"
     - "cluster:admin/opensearch/notifications/channels/get"
     - "cluster:admin/opensearch/notifications/feature/publish"
+    - "cluster:admin/opensearch/templates/*"
+    - "cluster:admin/opensearch/index_template/*"
   index_permissions:
     - index_patterns:
         - '*'
@@ -2083,7 +2146,13 @@ config:
             {{- if .Values.dashboard.sso.oidc.idp.enableSSL }}
             openid_connect_idp:
               enable_ssl: {{ .Values.dashboard.sso.oidc.idp.enableSSL }}
+              {{- if and (.Values.dashboard.sso.oidc.idp.pemtrustedcasFilePath) (not .Values.dashboard.sso.oidc.idp.pemtrustedcasContent) }}
               pemtrustedcas_filepath: {{ .Values.dashboard.sso.oidc.idp.pemtrustedcasFilePath }}
+              {{- end }}
+              {{- if and (.Values.dashboard.sso.oidc.idp.pemtrustedcasContent) (not .Values.dashboard.sso.oidc.idp.pemtrustedcasFilePath) }}
+              pemtrustedcas_content: |-
+                {{- .Values.dashboard.sso.oidc.idp.pemtrustedcasContent | nindent 16 }}
+              {{- end }}
             {{- end }}
             client_id: ${env.OPENSEARCH_OIDC_CLIENT_ID}
             client_secret: ${env.OPENSEARCH_OIDC_CLIENT_SECRET}
@@ -2100,6 +2169,16 @@ config:
           challenge: {{ not .Values.dashboard.sso.saml.primary }}
           config:
             idp:
+              {{- if .Values.dashboard.sso.saml.enableSSL }}
+              enable_ssl: {{ .Values.dashboard.sso.saml.enableSSL }}
+              {{- if and (.Values.dashboard.sso.saml.pemtrustedcasFilePath) (not .Values.dashboard.sso.saml.pemtrustedcasContent) }}
+              pemtrustedcas_filepath: {{ .Values.dashboard.sso.saml.pemtrustedcasFilePath }}
+              {{- end }}
+              {{- if and (.Values.dashboard.sso.saml.pemtrustedcasContent) (not .Values.dashboard.sso.saml.pemtrustedcasFilePath) }}
+              pemtrustedcas_content: |-
+                {{- .Values.dashboard.sso.saml.pemtrustedcasContent | nindent 16 }}
+              {{- end }}
+              {{- end }}
               metadata_url: {{ required "dashboard.sso.saml.metadataUrl is required" .Values.dashboard.sso.saml.metadataUrl }}
               entity_id: {{ required "dashboard.sso.saml.idpEntityId is required" .Values.dashboard.sso.saml.idpEntityId }}
             sp:
@@ -2129,7 +2208,6 @@ config:
         http_enabled: true
         transport_enabled: true
         order: {{ .Values.dashboard.basicAuth.order }}
-        http_authenticator:
           type: basic
           challenge: {{ .Values.dashboard.basicAuth.challenge }}
         authentication_backend:
@@ -2151,7 +2229,7 @@ config:
         description: "Authenticate via Json Web Token"
         http_enabled: false
         transport_enabled: false
-        order: 0
+        order: 4
         http_authenticator:
           type: jwt
           challenge: false

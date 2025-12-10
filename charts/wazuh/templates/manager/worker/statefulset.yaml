@@ -1,3 +1,4 @@
+{{- if .Values.wazuh.worker.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -24,6 +25,9 @@ spec:
       labels:
         app: {{ include "wazuh.fullname" . }}-manager
         node-type: worker
+        {{- with .Values.wazuh.worker.extraPodLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       name: wazuh-manager-worker
       annotations:
         {{- if .Values.autoreload.enabled }}
@@ -266,3 +270,4 @@ spec:
         storageClassName: {{ $storageClass }}
         {{- end }}
         {{- end }}
+{{- end }}
