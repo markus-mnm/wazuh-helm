@@ -102,6 +102,18 @@ spec:
               mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/config.yml
               subPath: config.yml
               readOnly: true
+            - name: indexer-conf
+              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/tenants.yml
+              subPath: tenants.yml
+              readOnly: true
+            - name: indexer-conf
+              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/nodes_dn.yml
+              subPath: nodes_dn.yml
+              readOnly: true
+            - name: indexer-conf
+              mountPath: {{ .Values.indexer.configBasePath }}/opensearch-security/whitelist.yml
+              subPath: whitelist.yml
+              readOnly: true
       terminationGracePeriodSeconds: 30
       volumes:
         - name: admin-certs
